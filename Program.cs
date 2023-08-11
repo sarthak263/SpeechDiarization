@@ -5,8 +5,7 @@ using System.Speech.Recognition;
 using System.Speech.AudioFormat;
 using Transcriber.SpeechToText;
 using Transcriber.SpeechDiarization;
-
-#pragma warning disable CA1416
+using Transcriber.SpeechProcessor;
 
 namespace Transcriber
 {
@@ -15,42 +14,21 @@ namespace Transcriber
 
         static async Task Main(string[] args)
         {
-            useSimpleSpeechToText();
-            await useSpeechDiarization();
+            //useSimpleSpeechToText();
+            var files = new List<string>();
+            files.Add(@"C:\Users\sarth\source\repos\Trasncriber\gettysburg10.wav");
+
+            var audioProcessor = new AudioProcessor();
+
+            // Process using the simple method
+            var tasksSimple = files.Select(file => Task.Run(() => audioProcessor.ProcessSpeechToTextFileAsync(file))).ToList();
+
+            // Process using speech diarization
+            var tasksDiarization = files.Select(file => Task.Run(() => audioProcessor.ProcessDiarizationFileAsync(file))).ToList();
+            
+            //wait for all the tasks to compelete
+            await Task.WhenAll(tasksSimple.Concat(tasksDiarization));
         }
-
-        static void useSimpleSpeechToText()
-        {
-            try
-            {
-                ISpeechRecognizerFactory recognizerCreator = new SpeechRecognizerFactory();
-                var recognizer = recognizerCreator.CreateRecognizer();
-                ISpeechRecognitionStrategy speechProcessor = new SpeechRecognitionStrategy(recognizer);
-                speechProcessor.RecognizeSpeech(@"C:\Users\sarth\source\repos\Trasncriber\gettysburg10.wav");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred in useSimpleSpeechToText: {ex.Message}");
-            }
-        }
-
-        static async Task useSpeechDiarization()
-        {
-            try
-            {
-                ITranscriberCreator transcriberCreator = new ConversationTranscriberCreator();
-                var transcriber = await transcriberCreator.CreateTranscriber("katiesteve.wav");
-
-                ITranscriptionProcessor transcriptionProcessor = new ConversationTranscriptionProcessor(transcriber);
-                await transcriptionProcessor.ProcessTranscription();
-
-            }catch (Exception ex) 
-            {
-                Console.WriteLine($"An error occurred in useSpeechDiarization: {ex.Message}");
-            }
-        }
+        
     }
 }
-
-
-#pragma warning restore CA1416

@@ -11,8 +11,8 @@ namespace Transcriber.SpeechDiarization
 {
     public class ConversationTranscriberCreator : ITranscriberCreator
     {
-        static string speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
-        static string speechRegion = Environment.GetEnvironmentVariable("SPEECH_REGION");
+        static string? speechKey = Environment.GetEnvironmentVariable("SPEECH_KEY");
+        static string? speechRegion = Environment.GetEnvironmentVariable("SPEECH_REGION");
 
         public async Task<ConversationTranscriber> CreateTranscriber(string audioFilePath)
         {

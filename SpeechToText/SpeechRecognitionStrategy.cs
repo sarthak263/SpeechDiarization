@@ -17,10 +17,23 @@ namespace Transcriber.SpeechToText
             _recognizer = recognizer;
         }
 
-        public void RecognizeSpeech(string audioFilePath)
+        public Task<RecognitionResult> RecognizeSpeechAsync(string audioFilePath)
         {
             _recognizer.SetInputToWaveFile(audioFilePath);
-            _recognizer.Recognize();
+
+            var tcs = new TaskCompletionSource<RecognitionResult>();
+
+            _recognizer.RecognizeCompleted += (s, e) =>
+            {
+                if (e.Error != null) tcs.SetException(e.Error);
+                else if (e.Cancelled) tcs.SetCanceled();
+                else tcs.SetResult(e.Result);
+            };
+
+            _recognizer.RecognizeAsync(RecognizeMode.Single);
+            
+
+            return tcs.Task;
         }
 
     }
